@@ -1,0 +1,35 @@
+<div>
+
+    <mat-progress-bar mode="indeterminate" *ngIf="dataSource.loading$ | async; else loadProgressDone" style="height: 3px;"></mat-progress-bar>
+    <ng-template #loadProgressDone>
+        <div style="height:3px">&nbsp;</div>
+    </ng-template>    
+
+    <mat-form-field>
+        <input matInput placeholder="Search" #input>
+    </mat-form-field>
+
+    <mat-table class="mat-elevation-z8" [dataSource]="dataSource" matSort matSortActive="seqNo" 
+        matSortDirection="asc" matSortDisableClear>
+        <ng-container matColumnDef="seqNo">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>#</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{row.seqNo}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+            <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{row.description}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="duration">
+            <mat-header-cell *matHeaderCellDef>Duration</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{row.duration}}</mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: columns"></mat-row>
+
+    </mat-table>
+
+    <mat-paginator [length]="dataSource.rows$ | async" [pageSize]="3" [pageSizeOptions]="pageSize"></mat-paginator>
+</div>

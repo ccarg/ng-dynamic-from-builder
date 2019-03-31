@@ -1,0 +1,376 @@
+<icon-dynamic-form-example></icon-dynamic-form-example>
+
+<server-side-grid 
+    [columns]='["seqNo", "description", "duration"]'
+    [pageSize]='[3, 5, 10]'
+    [loadDataCallback]="apiService.findLessons"
+>
+
+
+-------------------------
+import { Injectable } from '@angular/core';
+import {
+  HttpClient,
+  HttpRequest,
+  HttpEventType,
+  HttpResponse,
+  HttpHeaders,
+  HttpInterceptor,
+  HttpHandler,
+  HttpEvent,
+  HttpParams
+} from '@angular/common/http';
+import { Observable } from 'rxjs';
+import {
+  Network,
+  RateCard,
+  DealGrowRow,
+  TextValue,
+  NationalBuy,
+  Deal,
+  NetworkDemo
+} from '@icon/icon-models';
+import { IGridDataRequest, IGridDataResponse } from './server-side-grid/server-side-grid.component';
+
+@Injectable({ providedIn: 'root' })
+export class ApiService {
+  headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+  constructor(private http: HttpClient) {}
+
+  clientList = (): Observable<Array<TextValue>> =>
+    this.http.get<Array<TextValue>>('/National/NationalBuy/ClientList');
+
+  brandList = (): Observable<Array<TextValue>> =>
+    this.http.get<Array<TextValue>>('/National/NationalBuy/BrandList');
+
+  orderBudgetList = (): Observable<Array<TextValue>> =>
+    this.http.get<Array<TextValue>>('/National/NationalBuy/OrderBudgetList');
+
+  buyerList = (): Observable<Array<TextValue>> =>
+    this.http.get<Array<TextValue>>('/National/NationalBuy/BuyerList');
+
+  agencyList = (): Observable<Array<TextValue>> =>
+    this.http.get<Array<TextValue>>('/National/NationalBuy/AgencyList');
+
+  demoList = (): Observable<Array<TextValue>> =>
+    this.http.get<Array<TextValue>>('/National/NationalBuy/DemoList');
+
+  buyList = (): Observable<Array<NationalBuy>> =>
+    this.http.get<Array<NationalBuy>>('/National/NationalBuy/BuyList');
+
+  networkList = (): Observable<Array<TextValue>> =>
+    this.http.get<Array<TextValue>>('/National/NationalBuy/NetworkList');
+
+  dealList = (): Observable<Array<Deal>> =>
+    this.http.get<Array<Deal>>('/National/NationalBuy/DealList');
+
+  networkDemoList = (): Observable<Array<NetworkDemo>> =>
+    this.http.get<Array<NetworkDemo>>('/National/NationalBuy/NetworkDemoList');
+
+  yearsList = (): Observable<Array<number>> =>
+    this.http.get<Array<number>>('/National/NationalBuy/YearsList');
+
+  buyNetworkDetailList = (): Observable<Array<any>> =>
+    this.http.get<Array<any>>(
+      '/National/NationalBuy/BuyNetworkDetailList'
+    );
+
+  networkByNationalQuarterList = (year: number | string, quarter: number | string, nationalBuyId: number | string): Observable<Array<any>> =>
+    this.http.get<Array<any>>(
+      `/National/NationalBuy/NetworkByNationalQuarterList?year=${year}&quarter=${quarter}&nationalBuyId=${nationalBuyId}`
+    );
+
+  buyNetworkDetailDaypartList = (year: number | string, quarter: number | string, networkId: number | string, buyNetworkId: number | string, demoId: number | string, dealId: number | string): Observable<Array<any>> =>
+    this.http.get<Array<any>>(
+      `/National/NationalBuy/BuyNetworkDetailDaypartList?year=${year}&quarter=${quarter}&networkId=${networkId}&buyNetworkId=${buyNetworkId}&demoId=${demoId}&dealId=${dealId}`
+    );
+
+  save = (
+    nationalBuyRows: Array<NationalBuy>
+  ): Observable<Array<NationalBuy>> =>
+    this.http.post<Array<NationalBuy>>(
+      '/National/NationalBuy/Save',
+      JSON.stringify(nationalBuyRows),
+      { headers: this.headers }
+    );
+
+
+    findLessons = (req: IGridDataRequest): Observable<IGridDataResponse<any>> => {
+        return <any>this.http.get('/National/NationalBuy/ClientListTest', {
+            params: new HttpParams()
+                .set('page', req.page.toString())
+                .set('pageSize', req.pageSize.toString())                
+                .set('filterField', req.filterField)
+                .set('filterValue', req.filterValue)
+                .set('sortField', req.sortField)
+                .set('sortDirection', req.sortDirection)                
+        });
+    }    
+}
+
+@Injectable()
+export class WithCredentialsInterceptor implements HttpInterceptor {
+  intercept(
+    request: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+    request = request.clone({
+      withCredentials: true
+    });
+
+    return next.handle(request);
+  }
+}
+-----------------------
+
+@model ICollection<Icon.Intranet.Core.Models.Fulfillment.Deal>
+@using Icon.Intranet.Web.ExtensionMethods
+
+@{
+    ViewBag.Title = "Deal";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<icon-root>Loading...</icon-root>
+
+@Html.Include(new string[] {
+        //order important for angular
+        "~/Areas/ng-workspace/dist/apps/nbt/deals/styles.*",
+        "~/Areas/ng-workspace/dist/apps/nbt/deals/runtime.*",
+        "~/Areas/ng-workspace/dist/apps/nbt/deals/es2015-polyfills.*",
+        "~/Areas/ng-workspace/dist/apps/nbt/deals/polyfills.*",
+        "~/Areas/ng-workspace/dist/apps/nbt/deals/vendor.*",
+        "~/Areas/ng-workspace/dist/apps/nbt/deals/main.*"
+    },
+    "~/ng/deal"
+)
+
+
+--------------------------------
+using System.Linq;
+using Icon.Intranet.Web.Areas.PerformanceReview.Models;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
+using System.Web;
+using System.Web.Helpers;
+using System.Web.Mvc;
+using System.Web.Mvc.Html;
+using System.Web.Routing;
+using MvcCheckBoxList.Model;
+using System.Web.Script.Serialization;
+using Newtonsoft.Json;
+using System.Web.Optimization;
+
+namespace Icon.Intranet.Web.ExtensionMethods
+{
+
+public static Boolean DEBUG(this HtmlHelper helper)
+        {
+            var value = false;
+            #if DEBUG
+                value = true;
+            #endif
+            return value;
+        }
+
+        public static MvcHtmlString Include(this HtmlHelper helper, string[] filePaths, string bundleName)
+        {
+            var result = new StringBuilder();
+            var bundle = new Bundle(bundleName);
+            bundle.Include(filePaths);
+
+            var collection = new BundleCollection();
+            collection.Add(bundle);
+
+            var resolver = new BundleResolver(collection);
+            List<string> bundleFiles = resolver.GetBundleContents(bundleName).ToList();
+
+            for (int i = 0; i < bundleFiles.Count; i++)
+            {
+                if (bundleFiles[i].IndexOf(".css") != -1)
+                {
+                    result.Append(Styles.Render(bundleFiles[i]));
+                }
+                else if(bundleFiles[i].IndexOf("es2015-polyfills") != -1)
+                {
+                    result.Append(Scripts.Render(bundleFiles[i]).ToString().Replace("></script>", " nomodule></script>"));
+                }
+                else
+                {
+                    result.Append(Scripts.Render(bundleFiles[i]));                    
+                };
+            }
+            return MvcHtmlString.Create(result.ToString());
+        }
+}
+---------------------------------------
+
+using Microsoft.CSharp.RuntimeBinder;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+
+namespace Icon.Intranet.Web.Areas.National.Controllers
+
+    public enum Operator { Gt, Lt, Eq, Le, Ge, Ne, Contains, StartsWith, EndsWith }
+
+    public static class ExpressionHelpers
+    {
+        public static IQueryable<T> Page<T>(this IQueryable<T> obj, int page, int pageSize, out int rowsCount)
+        {
+            page = Math.Max(0, page);
+            rowsCount = obj.Count();
+            int skip = Math.Max(0, page * pageSize);
+            return obj.Skip(skip).Take(pageSize).AsQueryable();
+        }
+
+        public static IQueryable<V> SelectByName<T, V>(this IQueryable<T> source, string FieldName)
+        {
+            ParameterExpression paramExp = Expression.Parameter(typeof(T), "x");
+            MemberExpression memberExp = Expression.PropertyOrField(paramExp, FieldName);
+            var lambdaExp = Expression.Lambda<Func<T, V>>(memberExp, paramExp);
+            return source.Select(lambdaExp);
+        }
+
+        private static PropertyInfo GetPropertyInfo(Type objType, string name)
+        {
+            var properties = objType.GetProperties();
+            var matchedProperty = properties.FirstOrDefault(p => p.Name.ToLower() == name.ToLower());
+            if (matchedProperty == null)
+                throw new ArgumentException("name");
+
+            return matchedProperty;
+        }
+
+        private static LambdaExpression GetOrderExpression(Type objType, PropertyInfo pi)
+        {
+            var paramExpr = Expression.Parameter(objType);
+            var propAccess = Expression.PropertyOrField(paramExpr, pi.Name);
+            var expr = Expression.Lambda(propAccess, paramExpr);
+            return expr;
+        }
+
+        public static IQueryable<T> Where<T>(this IQueryable<T> query, string name, string filter, Operator op)
+        {
+            if (String.IsNullOrWhiteSpace(name) || String.IsNullOrWhiteSpace(filter))
+            {
+                return query;
+            }
+            var where = name.CreateDynamicExpression<T>(Operator.Contains, filter, typeof(string));
+            return query.Where(where);
+        }
+
+        public static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string name, string sortDirection)
+        {
+            if (String.IsNullOrWhiteSpace(name) || String.IsNullOrWhiteSpace(sortDirection)){
+                name = typeof(T).GetProperties()[0].Name;
+                sortDirection = "asc";
+            }
+
+            var propInfo = GetPropertyInfo(typeof(T), name);
+            var expr = GetOrderExpression(typeof(T), propInfo);
+
+            var method = typeof(Queryable).GetMethods()
+                .FirstOrDefault(m => m.Name == (sortDirection.ToLower() == "asc" ? "OrderBy" : "OrderByDescending") && m.GetParameters().Length == 2);
+            var genericMethod = method.MakeGenericMethod(typeof(T), propInfo.PropertyType);
+            return (IQueryable<T>)genericMethod.Invoke(null, new object[] { query, expr });
+        }
+
+        public static Expression<Func<TEntity, bool>> CreateDynamicExpression<TEntity>(this string propertyName, Operator op, string value, Type valueType)
+        {
+            Type type = typeof(TEntity);
+            object asType = AsType(value, valueType);
+            var p = Expression.Parameter(type, "x");
+            var property = Expression.Property(p, propertyName);
+            MethodInfo method;
+            Expression q;
+
+            switch (op)
+            {
+                case Operator.Gt:
+                    q = Expression.GreaterThan(property, Expression.Constant(asType));
+                    break;
+                case Operator.Lt:
+                    q = Expression.LessThan(property, Expression.Constant(asType));
+                    break;
+                case Operator.Eq:
+                    q = Expression.Equal(property, Expression.Constant(asType));
+                    break;
+                case Operator.Le:
+                    q = Expression.LessThanOrEqual(property, Expression.Constant(asType));
+                    break;
+                case Operator.Ge:
+                    q = Expression.GreaterThanOrEqual(property, Expression.Constant(asType));
+                    break;
+                case Operator.Ne:
+                    q = Expression.NotEqual(property, Expression.Constant(asType));
+                    break;
+                case Operator.Contains:
+                    method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                    q = Expression.Call(property, method ?? throw new InvalidOperationException(),
+                        Expression.Constant(asType, typeof(string)));
+                    break;
+                case Operator.StartsWith:
+                    method = typeof(string).GetMethod("StartsWith", new[] { typeof(string) });
+                    q = Expression.Call(property, method ?? throw new InvalidOperationException(),
+                        Expression.Constant(asType, typeof(string)));
+                    break;
+                case Operator.EndsWith:
+                    method = typeof(string).GetMethod("EndsWith", new[] { typeof(string) });
+                    q = Expression.Call(property, method ?? throw new InvalidOperationException(),
+                        Expression.Constant(asType, typeof(string)));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(op), op, null);
+            }
+
+            return Expression.Lambda<Func<TEntity, bool>>(q, p);
+        }
+
+        private static object AsType(string value, Type type)
+        {
+            string v = value;
+            if (value.StartsWith("'") && value.EndsWith("'"))
+                v = value.Substring(1, value.Length - 2);
+
+            if (type == typeof(string))
+                return v;
+            if (type == typeof(DateTime))
+                return DateTime.Parse(v);
+            if (type == typeof(DateTime?))
+                return DateTime.Parse(v);
+            if (type == typeof(int))
+                return int.Parse(v);
+            if (type == typeof(int?)) return int.Parse(v);
+
+            throw new ArgumentException("A filter was attempted for a field with value '" + value + "' and type '" + type + "' however this type is not currently supported");
+        }       
+    }
+
+    [AllowAnonymous]
+    public class NationalBuyController : Controller
+    {
+        //http://localhost:59904/national/NationalBuy/ClientListTest?page=2&pageSize=5&filterValue=a&filterField=Name&sortField=DateCreated&sortDirection=asc
+
+        public JsonResult ClientListTest(int page, int pageSize, string filterValue, string filterField, string sortField, string sortDirection)
+        {
+            var data = _store.Query<Deal>()
+                .Where(filterField, filterValue, Operator.Contains)
+                .OrderBy(sortField, sortDirection)
+                .Page(page, pageSize, out int rows)                
+                .Select(d => new {
+                    SeqNo = d.DateCreated,
+                    Description = d.Discount,
+                    Duration = d.Name
+                });
+            return (new { data, rows }).AsCamelJson();
+        }
+}
