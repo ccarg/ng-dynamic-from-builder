@@ -374,3 +374,233 @@ namespace Icon.Intranet.Web.Areas.National.Controllers
             return (new { data, rows }).AsCamelJson();
         }
 }
+------------------------------------------------
+
+public class JsonDotNetResult : JsonResult
+    {
+        private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
+
+        public override void ExecuteResult(ControllerContext context)
+        {
+            if (JsonRequestBehavior == JsonRequestBehavior.DenyGet && String.Equals(context.HttpContext.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("GET request not allowed");
+            }
+
+            var response = context.HttpContext.Response;
+
+            response.ContentType = !string.IsNullOrEmpty(this.ContentType) ? this.ContentType : "application/json";
+
+            if (ContentEncoding != null)
+            {
+                response.ContentEncoding = this.ContentEncoding;
+            }
+
+            if (Data == null)
+            {
+                return;
+            }
+
+            response.Write(JsonConvert.SerializeObject(Data, Settings));
+        }
+    }
+
+public static JsonResult AsJson(this object payload)
+        {
+            return new JsonResult() {
+                Data = payload,
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                MaxJsonLength = int.MaxValue                
+            };
+        }
+
+        public static JsonResult AsCamelJson(this object payload)
+        {
+            return new JsonDotNetResult()
+            {
+                Data = payload,
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                MaxJsonLength = int.MaxValue
+            };
+        }
+
+-----------------------------------------------------------------------
+
+<mat-form-field>
+    <input type="text" matInput [placeholder]="placeholder" 
+        [formControl]="control" [required]="required" 
+        [matAutocomplete]="listSelector">
+    
+        <cdk-virtual-scroll-viewport itemSize="50" minBufferPx="1000" maxBufferPx="10000">
+            <mat-autocomplete #listSelector="matAutocomplete">            
+                    <mat-option *cdkVirtualFor="let data of filteredData | async" [value]="data.text"
+                        (onSelectionChange)="onChanged($event, data)">{{data.text}}</mat-option>            
+            </mat-autocomplete>
+        </cdk-virtual-scroll-viewport>
+        <mat-error><strong>required</strong></mat-error>
+</mat-form-field>
+
+
+import { Component, OnInit, Input, ViewChild, ElementRef, Output, EventEmitter, Optional, Host, SkipSelf } from '@angular/core';
+import { TextValue } from '@icon/icon-models';
+import { startWith, map, first } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { FormControl, FormControlName, NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, ControlContainer } from '@angular/forms';
+import { MatOptionSelectionChange } from '@angular/material';
+
+@Component({
+    selector: 'icon-list-selector',
+    templateUrl: './list-selector.component.html',
+    styleUrls: ['./list-selector.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: ListSelectorComponent,
+            multi: true
+        }
+    ]
+})
+export class ListSelectorComponent implements ControlValueAccessor, OnInit {
+    @Input() formControlName: string;
+    control: AbstractControl;
+
+    @Input() placeholder: string = 'Select...';
+    @Input() required: boolean = false;
+
+    _dataList: TextValue[];
+    @Input('dataList')
+    set dataList(val: TextValue[]) {
+        if (val !== undefined && val.length > 0) {
+            this._dataList = val;
+            this.filteredData = this.control.valueChanges.pipe(
+                startWith(null),
+                map((value: string | null) => {
+                    let res = value ? this._filter(value) : this._dataList.slice();
+                    return res;
+                })
+            );
+        }
+    }
+
+    @Output() changed = new EventEmitter<any>();
+
+    filteredData: Observable<TextValue[]>;
+
+    constructor(
+        @Optional()
+        @Host()
+        @SkipSelf()
+        private controlContainer: ControlContainer
+    ) { }
+
+    ngOnInit() {
+        if (this.controlContainer) {
+            if (this.formControlName) {
+                this.control = this.controlContainer.control.get(this.formControlName);
+            } else {
+                console.warn(
+                    'Missing FormControlName directive from host element of the component'
+                );
+            }
+        } else {
+            console.warn("Can't find parent FormGroup directive");
+        }
+    }
+    
+    public _filter(value: string): TextValue[] {
+        const filterValue = value.toLowerCase();
+        return this._dataList.filter(
+            value => value.text.toLowerCase().indexOf(filterValue) === 0
+        );
+    }
+
+    onChanged(event: MatOptionSelectionChange, data) {
+        if (event.isUserInput) {
+            this.changed.emit(data);
+        }
+    }
+
+    writeValue(obj: any): void { }
+    registerOnChange(fn: any): void { }
+    registerOnTouched(fn: any): void { }
+    setDisabledState?(isDisabled: boolean): void { }
+}
+
+
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatDialogModule, MatAutocompleteModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatGridListModule } from '@angular/material';
+import { MessageBoxComponent } from './message-box/message-box.component';
+import { ListSelectorComponent } from './list-selector/list-selector.component';
+import { DocumentsComponent, DocumentsDialog } from './documents/documents.component';
+import { MultiSelectorComponent } from './multi-selector/multi-selector.component';
+import { MatChipsModule, MAT_CHIPS_DEFAULT_OPTIONS } from '@angular/material/chips';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ScrollDispatchModule } from '@angular/cdk/scrolling';
+import { GridCellInputComponent } from './grid-cell-input/grid-cell-input.component';
+import { GridCellSelectComponent } from './grid-cell-select/grid-cell-select.component';
+import { IconPipesModule } from '@icon/icon-pipes';
+import { CdkTableModule } from '@angular/cdk/table';
+import { MatTableModule } from '@angular/material/table';
+
+@NgModule({
+    imports: [
+        CommonModule,
+        MatSnackBarModule,
+        MatButtonModule,
+        MatListModule,
+        MatIconModule,
+        MatBadgeModule,
+        MatDialogModule,
+        MatChipsModule,
+        MatAutocompleteModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatGridListModule,
+        ScrollDispatchModule,
+        MatTableModule,
+        CdkTableModule,
+        IconPipesModule
+    ],
+    declarations: [
+        MessageBoxComponent,
+        DocumentsComponent,
+        DocumentsDialog,
+        MultiSelectorComponent,
+        ListSelectorComponent,
+        GridCellInputComponent,
+        GridCellSelectComponent
+    ],
+    providers: [
+        {
+            provide: MAT_CHIPS_DEFAULT_OPTIONS,
+            useValue: {
+                separatorKeyCodes: [ENTER, COMMA]
+            }
+        }
+    ],
+    exports: [
+        MessageBoxComponent,
+        DocumentsComponent,
+        DocumentsDialog,
+        MultiSelectorComponent,
+        ListSelectorComponent,
+        GridCellInputComponent,
+        GridCellSelectComponent        
+    ]
+})
+export class IconComponentsModule { }
+
+-------------------------------------------------

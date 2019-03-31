@@ -1,0 +1,242 @@
+
+<p>test</p>
+<mat-table [dataSource]="deals.dataSource" 
+    #dealsSort="matSort" 
+    matSort style="overflow: auto;margin-bottom: 20px;" [style.height.px]="height"
+    class="mat-elevation-z8">
+
+    <ng-container cdkColumnDef="toolbar" sticky>
+        <mat-header-cell *cdkHeaderCellDef width-160 class="center">
+            <div style="width: 100%; height: 42px!important;">
+                <mat-form-field>
+                    <input matInput #gridFilter (keyup)="deals?.filter($event)" placeholder="filter">
+                    <button mat-button matSuffix mat-icon-button aria-label="Clear"
+                        (click)="gridFilter.value=''; deals?.filter($event)">
+                        <mat-icon color="warn" *ngIf="gridFilter.value !== ''">close</mat-icon>
+                        <mat-icon *ngIf="gridFilter.value === ''">search</mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+        </mat-header-cell>
+        <mat-cell *cdkCellDef="let row" width-160 
+            [class.edit]="row.Edit"             
+            [class.dirty]="row.Dirty && row.IsActive"
+            [class.soft-deleted]="!row.IsActive" class="center">
+            <div>
+                <button mat-icon-button *ngIf="!row['Edit'] && row.IsActive" (click)="onEditDeal(row, true)" color="primary">
+                    <mat-icon *ngIf="!row.Dirty">edit</mat-icon>
+                    <mat-icon *ngIf="row.Dirty">border_color</mat-icon>
+                </button>
+                <button mat-icon-button *ngIf="row.Edit  && row.IsActive" (click)="onEditDeal(row, false)" color="accent">
+                    <mat-icon>done</mat-icon>
+                </button>
+                <button mat-icon-button (click)="softDelete ? deals.softDeleteToggle(row) : deals.delete(row)">
+                    <mat-icon color="warn" *ngIf="row.IsActive">delete_forever</mat-icon>
+                    <mat-icon color="primary" *ngIf="!row.IsActive">restore_from_trash</mat-icon>
+                </button>
+                <icon-documents [documents]="row.Documents" (documentsEdited)="row.Documents = $event; row.Dirty = true"></icon-documents> 
+            </div>            
+        </mat-cell>
+    </ng-container>
+
+    <ng-container cdkColumnDef="Name" sticky>
+        <mat-header-cell width-120 *cdkHeaderCellDef mat-sort-header class="center">Name</mat-header-cell>
+        <mat-cell [class.edit]="row.Edit" 
+            [class.dirty]="row.Dirty && row.IsActive"
+            [class.soft-deleted]="!row.IsActive"
+            width-120 *cdkCellDef="let row">
+            <div [matTooltip]="row.Name">{{row.Name || '&nbsp;'}}</div>
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="Network" sticky>
+        <mat-header-cell width-120 *cdkHeaderCellDef mat-sort-header class="center">Network</mat-header-cell>
+        <mat-cell [class.edit]="row.Edit" 
+            [class.dirty]="row.Dirty && row.IsActive"
+            [class.soft-deleted]="!row.IsActive"
+            width-120 *cdkCellDef="let row">
+            <div [matTooltip]="row.Network" *ngIf="!row['Edit']">{{row.Network || '&nbsp;'}}</div>            
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.NetworkId">
+                    <mat-option (click)="row.Network = ''; row.NetworkSbmsId = undefined" [value]="0">None</mat-option>
+                    <mat-option *ngFor="let e of networks" [value]="e.Id" 
+                        (click)="row.Network = e.NetworkName; row.NetworkSbmsId = e.SbmsId"> {{e.NetworkName}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="RateCard" sticky>
+        <mat-header-cell width-120 *cdkHeaderCellDef mat-sort-header class="center">RateCard</mat-header-cell>
+        <mat-cell [class.edit]="row.Edit" 
+            [class.dirty]="row.Dirty && row.IsActive"
+            [class.soft-deleted]="!row.IsActive"
+            width-120 *cdkCellDef="let row">
+            <div [matTooltip]="row.RateCard"  *ngIf="!row['Edit']">{{row.RateCard || '&nbsp;'}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.RateCardId">
+                    <mat-option (click)="row.RateCard = ''" [value]="0">None</mat-option>
+                    <mat-option *ngFor="let e of rateCards | rateCardFilter: row.NetworkSbmsId" [value]="e.Id"
+                        (click)="row.RateCard = e.Name"> {{e.Name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>        
+    </ng-container>
+    
+    <ng-container cdkColumnDef="ValueType">
+        <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center">ValueType</mat-header-cell>
+        <mat-cell width-100 *cdkCellDef="let row">
+            <div *ngIf="!row['Edit']">{{showTextForListItem(valueTypes, row.ValueType !== 0 ? row.ValueType : '' )}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.ValueType">
+                    <mat-option [value]="0">None</mat-option>
+                    <mat-option *ngFor="let e of valueTypes" [value]="e.Value">{{e.Text}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="FullValue">
+        <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center">FullValue</mat-header-cell>
+        <mat-cell width-100 *cdkCellDef="let row" [class.validation-error]="maxFullValueError">
+            <div *ngIf="!row['Edit']" class="right">{{row.FullValue | money}}</div>
+            <input *ngIf="row.Edit" type="number" [(ngModel)]="row.FullValue" 
+                [class.validation-error]="maxFullValueError"
+                class="grid-input right">
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="RateBasis">
+        <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center">RateBasis</mat-header-cell>
+        <mat-cell width-100 *cdkCellDef="let row">
+            <div *ngIf="!row['Edit']">{{showTextForListItem(rateBasis, row.RateBasis) || ''}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.RateBasis">
+                    <mat-option [value]="0">None</mat-option>
+                    <mat-option *ngFor="let e of rateBasis" [value]="e.Value">{{e.Text}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+       
+    <ng-container cdkColumnDef="PercentTradeNet">
+        <mat-header-cell width-70 *cdkHeaderCellDef mat-sort-header class="center">
+            <div class="mat-split-header">
+                <div class="mat-split-header-line">Trade</div><div class="mat-split-header-line">Net</div>
+            </div>
+        </mat-header-cell>
+        <mat-cell width-70 *cdkCellDef="let row">
+            <div *ngIf="!row['Edit']" class="right">{{row.PercentTradeNet | percent}}</div>
+            <input *ngIf="row.Edit" [(ngModel)]="row.PercentTradeNet" type="number" class="grid-input right">
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="PercentCash">
+        <mat-header-cell width-70 *cdkHeaderCellDef mat-sort-header class="center">Cash</mat-header-cell>
+        <mat-cell width-70 *cdkCellDef="let row">
+            <div *ngIf="!row['Edit']" class="right">{{row.PercentCash | percent}}</div>
+            <input *ngIf="row.Edit" [(ngModel)]="row.PercentCash" type="number" class="grid-input right">
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="HitPercentage">
+        <mat-header-cell width-70 *cdkHeaderCellDef mat-sort-header class="center">Hit</mat-header-cell>
+        <mat-cell width-70 *cdkCellDef="let row">
+            <div *ngIf="!row['Edit']" class="right">{{row.HitPercentage | percent}}</div>
+            <input *ngIf="row.Edit" [(ngModel)]="row.HitPercentage" type="number" class="grid-input right">
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="Discount">
+        <mat-header-cell width-70 *cdkHeaderCellDef mat-sort-header class="center">Disc</mat-header-cell>
+        <mat-cell width-70 *cdkCellDef="let row">
+            <div *ngIf="!row['Edit']" class="right">{{row.Discount | percent}}</div>
+            <input *ngIf="row.Edit" [(ngModel)]="row.Discount" type="number" class="grid-input right">
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="DayPart">
+        <mat-header-cell width-80 *cdkHeaderCellDef mat-sort-header class="center">DayPart</mat-header-cell>
+        <mat-cell width-80 *cdkCellDef="let row">
+            <div *ngIf="!row['Edit']">{{row.DayPart}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.DayPartId" (selectionChange)="row.DayPart = $event?.source?.selected?.viewValue">
+                    <mat-option [value]="0">None</mat-option>
+                    <mat-option *ngFor="let e of dayParts" [value]="e.Value">{{e.Text}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="StartYear">
+        <mat-header-cell width-80 *cdkHeaderCellDef mat-sort-header class="center">
+            <div class="mat-split-header">
+                <div class="mat-split-header-line">Start</div><div class="mat-split-header-line">Year</div>
+            </div>
+        </mat-header-cell>
+        <mat-cell width-80 *cdkCellDef="let row" class="center">
+            <div *ngIf="!row['Edit']">{{row.StartYear}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.StartYear">
+                    <mat-option *ngFor="let e of years" [value]="e['Value']">{{e['Value']}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="StartQuarter">
+        <mat-header-cell width-80 *cdkHeaderCellDef mat-sort-header class="center">
+            <div class="mat-split-header">
+                <div class="mat-split-header-line">Start</div><div class="mat-split-header-line">Quarter</div>
+            </div>            
+        </mat-header-cell>
+        <mat-cell width-80 *cdkCellDef="let row" class="center">
+            <div *ngIf="!row['Edit']">{{showTextForListItem(appData.Quarters, row.StartQuarter)}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.StartQuarter">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let e of appData.Quarters | quarterRange: row.StartYear: row.EndYear: row.StartQuarter" [value]="e.Value">{{e.Text}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="EndYear">
+        <mat-header-cell width-80 *cdkHeaderCellDef mat-sort-header class="center">
+            <div class="mat-split-header">
+                <div class="mat-split-header-line">End</div><div class="mat-split-header-line">Year</div>
+            </div>
+        </mat-header-cell>
+        <mat-cell width-80 *cdkCellDef="let row" class="center">
+            <div *ngIf="!row['Edit']">{{row.EndYear}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.EndYear">
+                    <mat-option *ngFor="let e of years | yearRange: row.StartYear" [value]="e.Value">{{e.Value}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+    
+    <ng-container cdkColumnDef="EndQuarter">
+        <mat-header-cell width-80 *cdkHeaderCellDef mat-sort-header class="center">
+            <div class="mat-split-header">
+                <div class="mat-split-header-line">End</div><div class="mat-split-header-line">Quarter</div>
+            </div>
+        </mat-header-cell>
+        <mat-cell width-80 *cdkCellDef="let row" class="center">
+            <div *ngIf="!row['Edit']">{{showTextForListItem(appData.Quarters, row.EndQuarter)}}</div>
+            <mat-form-field *ngIf="row['Edit']" class="grid-edit">
+                <mat-select [(ngModel)]="row.EndQuarter">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let e of appData.Quarters | quarterRange: row.StartYear: row.EndYear: row.StartQuarter"
+                        [value]="e.Value">{{e.Text}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </mat-cell>
+    </ng-container>
+    <mat-header-row *cdkHeaderRowDef="deals.columns; sticky: true"></mat-header-row>
+    <mat-row *cdkRowDef="let row; columns: deals.columns; let i = index" (click)="deals.select(row)"></mat-row>
+</mat-table>
+<mat-paginator *ngIf="showPagination" [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>

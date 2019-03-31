@@ -1,0 +1,28 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es5",
+    "module": "es2015",
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@icon/common/utils": ["libs/common/utils/src/index.ts"],
+      "@icon/icon-pipes": ["libs/icon-pipes/src/index.ts"],
+      "@icon/icon-utils": ["libs/icon-utils/src/index.ts"],
+      "@icon/icon-models": ["libs/icon-models/src/index.ts"],
+      "@icon/icon-components": ["libs/icon-components/src/index.ts"],
+      "@icon/icon-documents": ["libs/icon-documents/src/index.ts"],
+      "@icon/icon-service": ["libs/icon-service/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

@@ -1,0 +1,74 @@
+<div mat-dialog-title style="display: flex!important; justify-content: space-between!important;">
+        <h3>Network: {{nationalBuyNetwork.networkName}}</h3>
+        <button mat-icon-button [mat-dialog-close]="data">
+            <mat-icon>close</mat-icon>                                
+        </button>        
+</div>
+
+<div mat-dialog-content>
+
+    <div class="row" *ngIf="!loading; else loadProgress"></div>
+    <ng-template #loadProgress>
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </ng-template>
+
+  <mat-table [dataSource]="gridData" style="height: 400px;overflow: auto;margin-bottom: 20px;" class="mat-elevation-z8">
+
+  <ng-container cdkColumnDef="networkDaypart">
+      <mat-header-cell width-280 *cdkHeaderCellDef class="center">
+          <div class="mat-split-header"><div>Network</div><div>Daypart</div></div>
+      </mat-header-cell>
+      <mat-cell width-280 *cdkCellDef="let row">{{row.daypartName}}</mat-cell>
+      <mat-footer-cell width-280 class="center" *cdkFooterCellDef><strong>Subtotal:</strong></mat-footer-cell> 
+  </ng-container>
+  <ng-container cdkColumnDef="percentDistribution">
+      <mat-header-cell *cdkHeaderCellDef class="center">
+          <div class="mat-split-header"><div>Percent</div><div>Distribution</div></div>
+      </mat-header-cell>
+      <mat-cell *cdkCellDef="let row" class="center">
+          <input type="number" [(ngModel)]="row.percentDistribution" class="grid-input right">
+      </mat-cell>
+      <mat-footer-cell class="center" *cdkFooterCellDef><strong>{{getTotal('percentDistribution') | percent}}</strong></mat-footer-cell> 
+  </ng-container>
+  <ng-container cdkColumnDef="defaultCpm">
+      <mat-header-cell *cdkHeaderCellDef class="center">
+          <div class="mat-split-header"><div>Default</div><div>Cpm</div></div>
+      </mat-header-cell>
+      <mat-cell *cdkCellDef="let row" class="center">
+          <input type="number" [(ngModel)]="row.defaultCpm" class="grid-input right">
+      </mat-cell>
+      <mat-footer-cell class="center" *cdkFooterCellDef><strong>{{getTotal('defaultCpm') | money}}</strong></mat-footer-cell> 
+  </ng-container>
+  <ng-container cdkColumnDef="overrideCpm">
+      <mat-header-cell *cdkHeaderCellDef class="center">
+          <div class="mat-split-header"><div>Override</div><div>Cpm</div></div>
+      </mat-header-cell>
+      <mat-cell *cdkCellDef="let row" class="center">
+          <input type="number" [(ngModel)]="row.overrideCpm" class="grid-input right">
+      </mat-cell>
+      <mat-footer-cell class="center" *cdkFooterCellDef><strong>{{getTotal('overrideCpm') | money}}</strong></mat-footer-cell> 
+  </ng-container>
+  <ng-container cdkColumnDef="daypartCpm">
+        <mat-header-cell *cdkHeaderCellDef class="center">
+            <div class="mat-split-header"><div>Daypart</div><div>Cpm</div></div>
+        </mat-header-cell>
+        <mat-cell *cdkCellDef="let row">{{getDaypardCmp(row)}}</mat-cell>                
+        <mat-footer-cell class="center" *cdkFooterCellDef><strong>{{getTotal('daypartCpm') | money}}</strong></mat-footer-cell> 
+   </ng-container>
+   <ng-container cdkColumnDef="notes">
+        <mat-header-cell width-420 *cdkHeaderCellDef class="center">Notes</mat-header-cell>
+        <mat-cell width-420 *cdkCellDef="let row" class="center">
+            <input type="text" [(ngModel)]="row.notes" class="grid-input right">
+        </mat-cell>
+        <mat-footer-cell width-420 class="center" *cdkFooterCellDef></mat-footer-cell> 
+    </ng-container>
+    
+  <mat-header-row *cdkHeaderRowDef="columns; sticky: true"></mat-header-row>
+  <mat-row *cdkRowDef="let row; columns: columns"></mat-row>
+  <mat-footer-row *cdkFooterRowDef="columns; sticky: true"></mat-footer-row>
+</mat-table>  
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Cancel</button>  
+  <button mat-button cdkFocusInitial (click)="onSave()" color="primary">Save</button>  
+</div>

@@ -1,0 +1,138 @@
+<div class="flex-justify-end">
+    <button mat-button color="primary" style="height:42px">Add</button>
+    <button mat-button color="primary" style="height:42px">Export To Excel</button>
+    <button mat-button color="warn" style="height:42px">Refresh</button>            
+    <button mat-button color="warn" style="height:42px">Save Current Version As</button>                
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="row" *ngIf="!loading; else loadProgress"></div>
+        <ng-template #loadProgress>
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </ng-template>
+        <div class="row">
+            <mat-table [dataSource]="nationalBuyNetwork.dataSource" #nationalBuySort="matSort" matSort
+                style="height: 500px;overflow: auto;margin-bottom: 20px;" class="mat-elevation-z8">
+
+                <ng-container cdkColumnDef="toolbar" sticky>
+                    <mat-header-cell *cdkHeaderCellDef width-140 class="center">
+                        <div style="width: 100%; height: 42px!important;">
+                            <mat-form-field>
+                                <input matInput #gridFilter (keyup)="nationalBuyNetwork?.filter($event)" placeholder="filter">
+                                <button mat-button matSuffix mat-icon-button aria-label="Clear"
+                                    (click)="gridFilter.value=''; nationalBuyNetwork?.filter($event)">
+                                    <mat-icon color="warn" *ngIf="gridFilter.value !== ''">close</mat-icon>
+                                    <mat-icon *ngIf="gridFilter.value === ''">search</mat-icon>
+                                </button>
+                            </mat-form-field>
+                        </div>
+                    </mat-header-cell>
+                    <mat-cell *cdkCellDef="let row" width-140 [class.soft-deleted]="!row.isActive"
+                        [class.selected]="nationalBuyNetwork.isSelected(row)">
+                        <div>
+                            <button mat-icon-button (click)="onEdit(row)" [disabled]="!row.isActive" color="primary">
+                                <mat-icon *ngIf="!row['dirty']">edit</mat-icon>
+                                <mat-icon *ngIf="row['dirty']">border_color</mat-icon>                                
+                            </button>
+                            <button mat-icon-button (click)="nationalBuyNetwork.softDeleteToggle(row, true)">
+                                <mat-icon color="warn" *ngIf="row.isActive">delete_forever</mat-icon>
+                                <mat-icon color="primary" *ngIf="!row.isActive">restore_from_trash</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="openNationalBuyNetworkDetails(row)">                                
+                                <mat-icon color="primary" *ngIf="row.isActive">list</mat-icon>
+                            </button>
+                            {{calcNationalBuyNetwork(row)}}
+                        </div>
+                    </mat-cell>
+                    <mat-footer-cell width-140 *cdkFooterCellDef>&nbsp;</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="networkName" sticky>
+                    <mat-header-cell width-120 *cdkHeaderCellDef mat-sort-header class="center">Network</mat-header-cell>
+                    <mat-cell [class.soft-deleted]="!row.isActive" [class.selected]="nationalBuyNetwork.isSelected(row)" 
+                        icon-grid-cell-select [row]="row" [field]="'networkName'" [fieldId]="'networkSbmsId'" 
+                        [listData]="networks" [listField]="'text'" [listFieldId]="'value'" width-120 *cdkCellDef="let row">
+                    </mat-cell>
+                    <mat-footer-cell width-120 *cdkFooterCellDef>&nbsp;</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="demoName">
+                    <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center">Demo</mat-header-cell>
+                    <mat-cell width-100 *cdkCellDef="let row" class="center" icon-grid-cell-select [row]="row" [field]="'demoName'" [fieldId]="'demoId'" [listData]="networks" [listField]="'text'" [listFieldId]="'value'"></mat-cell>
+                    <mat-footer-cell width-100 *cdkFooterCellDef>&nbsp;</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="dealName">
+                    <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center">Deal</mat-header-cell>
+                    <mat-cell width-100 *cdkCellDef="let row" class="center" icon-grid-cell-select [row]="row" [field]="'dealName'" [fieldId]="'dealId'" [listData]="deals" [listField]="'name'" [listFieldId]="'id'"></mat-cell>
+                    <mat-footer-cell class="right" width-100 *cdkFooterCellDef>Subtotal:</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="grossBudget">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Client</div><div>Budget</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center" [row]="row" [field]="'grossBudget'" [type]="'number'" [pipe]="'money'" icon-grid-cell-input></mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>{{getTotal('grossBudget') | money}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="grossCPM">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Client</div><div>CPM</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center" [row]="row" [field]="'grossCPM'" [type]="'number'" [pipe]="'money'" icon-grid-cell-input></mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>{{getTotal('grossCPM') | money}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="clientGRP">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Client</div><div>GRP</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center">{{row.clientGRP}}</mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>{{getTotal('clientGRP') | number: '0.2-2'}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="impressions">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center">Imp</mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center">{{row.impressions}}</mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>{{getTotal('impressions')}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="buyingDemoUniverse">
+                    <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Buying</div><div>Demo Univ</div></div></mat-header-cell>
+                    <mat-cell width-100 *cdkCellDef="let row" class="center">{{row.buyingDemoUniverse}}</mat-cell>
+                    <mat-footer-cell class="center" width-100 *cdkFooterCellDef>&nbsp;</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="iconBudget">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Icon</div><div>Budget</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center">{{row.iconBudget}}</mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>{{getTotal('iconBudget') | money}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="fullValue">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Full</div><div>Value</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center">{{row.fullValue}}</mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>&nbsp;</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="iconCPM">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Icon</div><div>CPM</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center">{{row.iconCPM}}</mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>{{getTotal('iconCPM') | money}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="iconGRP">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Icon</div><div>GRP</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center" [row]="row" [field]="'iconGRP'" [type]="'number'" [pipe]="'number'" icon-grid-cell-input></mat-cell>
+                    <mat-footer-cell class="center" width-90 *cdkFooterCellDef>{{getTotal('iconGRP') | number: '0.2-2'}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="networkAdjustment">
+                    <mat-header-cell width-110 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Network</div><div>Adjustment</div></div></mat-header-cell>
+                    <mat-cell width-110 *cdkCellDef="let row" class="center" [row]="row" [field]="'networkAdjustment'" [type]="'number'" [pipe]="'money'" icon-grid-cell-input></mat-cell>
+                    <mat-footer-cell class="center" width-110 *cdkFooterCellDef>&nbsp;</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="lvg">
+                    <mat-header-cell width-70 *cdkHeaderCellDef mat-sort-header class="center">Lvg</mat-header-cell>
+                    <mat-cell width-70 *cdkCellDef="let row" class="center">{{row.lvg}}</mat-cell>
+                    <mat-footer-cell class="center" width-70 *cdkFooterCellDef>{{getTotal('lvg') | percent}}</mat-footer-cell> 
+                </ng-container>
+                <ng-container cdkColumnDef="dealBalance">
+                    <mat-header-cell width-90 *cdkHeaderCellDef mat-sort-header class="center"><div class="mat-split-header"><div>Deal</div><div>Balance</div></div></mat-header-cell>
+                    <mat-cell width-90 *cdkCellDef="let row" class="center">{{row.dealBalance}}</mat-cell>
+                    <mat-footer-cell width-90 *cdkFooterCellDef>&nbsp;</mat-footer-cell> 
+                </ng-container>
+
+                <mat-header-row *cdkHeaderRowDef="nationalBuyNetwork.columns; sticky: true"></mat-header-row>
+                <mat-row *cdkRowDef="let row; columns: nationalBuyNetwork.columns" (click)="nationalBuyNetwork.select(row)"></mat-row>
+                <mat-footer-row *cdkFooterRowDef="nationalBuyNetwork.columns; sticky: true"></mat-footer-row>
+            </mat-table>
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+        </div>
+
+    </div>
+</div>
+
+<!-- <pre>{{nationalBuyNetworkData | json}}</pre> -->

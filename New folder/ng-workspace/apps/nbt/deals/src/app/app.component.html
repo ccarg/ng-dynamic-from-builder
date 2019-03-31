@@ -1,0 +1,332 @@
+<div class="row">
+    <div class="xs-col-12">
+        <mat-tab-group>
+            <!-- tab Deals -->
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <mat-icon>layers</mat-icon>&nbsp;Deals
+                </ng-template>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="flex-justify-end">
+                            <button mat-button color="primary" (click)="saveMain()" [disabled]="canSaveMain()"
+                                style="height:42px">Save</button>
+                            <button mat-button color="warn" (click)="reloadMain()" style="height:42px">Refresh</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="isDealsGridAction">
+                    <div class="col-xs-12">
+                        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12" style="margin: 0px; margin-top: 15px; margin-bottom: 15px;">
+                        <app-deals-grid #existingDealsGrid [height]='500' [showPagination]="true"
+                            [pageSizeOptions]="[25, 50, 100]" [valueTypes]="valueTypes" [rateBasis]="rateBasis"
+                            [years]="years" [networks]="networksData" [rateCards]="rateCardsData" [softDelete]="true">
+                        </app-deals-grid>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- tab Create New Deals -->
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <mat-icon>edit</mat-icon>&nbsp;Create New Deals
+                </ng-template>
+
+                <div *ngIf="$years | async; else networkLoadProgress"></div>
+                <div *ngIf="$valueTypes | async; else networkLoadProgress"></div>
+                <div *ngIf="$rateBasis | async; else networkLoadProgress"></div>
+                <ng-template #networkLoadProgress>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                        </div>
+                    </div>
+                </ng-template>
+
+                <!-- parent deal 1st row -->
+                <div class="row" style="margin-top: 13px;">
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <input matInput placeholder="Deal Name" [(ngModel)]="deal.Name"
+                                (ngModelChange)="deal.validate('Name')">
+                            <mat-hint *ngIf="deal?.ErrorFields['Name']">Name <strong>required</strong></mat-hint>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-8" style="display: flex;line-height: 42px;justify-content: space-between;">
+                        <label class="group-header">Deal&nbsp;Defaults:</label>
+                        <div class="flex">
+                            <button (click)="addDeal()" mat-button color="primary" style="height:42px">Add</button>
+                            <button mat-button color="primary" (click)="saveNew()" [disabled]="canSaveNew()"
+                                style="height:42px">Save</button>
+                            <button mat-button color="warn" (click)="clearNew()" style="height:42px">Clear All</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- parent deal 2nd row -->
+                <div class="row">
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <mat-select placeholder="Start Year" [(ngModel)]="deal.StartYear"
+                                (ngModelChange)="deal.validate('StartYear')">
+                                <mat-option *ngFor="let e of years" [value]="e['Value']">{{e['Value']}}</mat-option>
+                            </mat-select>
+                            <mat-hint *ngIf="deal?.ErrorFields['StartYear']">StartYear <strong>required</strong>
+                            </mat-hint>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <mat-select placeholder="Value Type" [(ngModel)]="deal.DealDetails.ValueType">
+                                <mat-option *ngFor="let e of valueTypes;" [value]="e.Value"
+                                    (click)="deal.DealDetails.applyValueType(e.Text); setState();">{{e.Text}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <input matInput [(ngModel)]="deal.DealDetails.HitPercentage" type="number"
+                                placeholder="% Hit Percentage" [disabled]="deal.DealDetails.HitPercentageDisabled">
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <!-- parent deal 3rd row -->
+                <div class="row">
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <mat-select placeholder="Start Quarter" [(ngModel)]="deal.StartQuarter"
+                                (ngModelChange)="deal.validate('StartQuarter')">
+                                <mat-option *ngFor="let e of appData.Quarters" [value]="e.Value">
+                                    {{e.Text}}
+                                </mat-option>
+                            </mat-select>
+                            <mat-hint *ngIf="deal?.ErrorFields['StartQuarter']">StartQuarter <strong>required</strong>
+                            </mat-hint>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <input matInput placeholder="Full Value" [(ngModel)]="deal.DealDetails.FullValue"
+                                type="number">
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <input matInput [(ngModel)]="deal.DealDetails.Discount" placeholder="% Discount"
+                                type="number" [disabled]="deal.DealDetails.DiscountDisabled">
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <!-- parent deal 4th row -->
+                <div class="row">
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <mat-select placeholder="End Year" [(ngModel)]="deal.EndYear"
+                                (ngModelChange)="deal.validate('EndYear')">
+                                <mat-option *ngFor="let e of years | yearRange: deal.StartYear" [value]="e.Value">
+                                    {{e.Value}}
+                                </mat-option>
+                            </mat-select>
+                            <mat-hint *ngIf="deal?.ErrorFields['EndYear']">EndYear <strong>required</strong></mat-hint>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <mat-select matNativeControl placeholder="Rate Basis"
+                                [(ngModel)]="deal.DealDetails.RateBasis">
+                                <mat-option *ngFor="let e of rateBasis" [value]="e.Value">{{e.Text}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <input matInput [(ngModel)]="deal.DealDetails.PercentCash" placeholder="% Cash"
+                                type="number" [disabled]="deal.DealDetails.PercentCashDisabled">
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <!-- parent deal 5th row -->
+                <div class="row">
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <mat-select placeholder="End Quarter" [(ngModel)]="deal.EndQuarter"
+                                (ngModelChange)="deal.validate('EndQuarter')">
+                                <mat-option
+                                    *ngFor="let e of appData.Quarters | quarterRange: deal.StartYear: deal.EndYear: deal.StartQuarter"
+                                    [value]="e.Value">
+                                    {{e.Text}}
+                                </mat-option>
+                            </mat-select>
+                            <mat-hint *ngIf="deal?.ErrorFields['EndQuarter']">EndQuarter <strong>required</strong>
+                            </mat-hint>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-4 flex-space-between">
+                        <mat-checkbox class="deal-checkbox" [(ngModel)]="deal.DealDetails.HasQuarterly">Has Quarterly
+                        </mat-checkbox>
+                        <icon-documents [documents]="deal.Documents" (documentsEdited)="deal.Documents = $event"></icon-documents>
+                    </div>
+                    <div class="col-xs-4">
+                        <mat-form-field>
+                            <input matInput [(ngModel)]="deal.DealDetails.PercentTradeNet" placeholder="% Trade Net"
+                                type="number" [disabled]="deal.DealDetails.PercentTradeNetDisabled">
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <!-- networks and rate cards row -->
+                <div class="row">
+                    <div class="col-xs-12 inline">
+                        <div class="col-xs-5 margin-5px">
+                            <div *ngIf="networks.$data | async as networksData; else networkLoadProgress"></div>
+                            <ng-template #networkLoadProgress>
+                                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                            </ng-template>
+                            <div class="row">
+                                <mat-table [dataSource]="networks.dataSource" #networksSort="matSort" matSort
+                                    style="height: 300px;overflow: auto;" class="mat-elevation-z8">
+                                    <ng-container cdkColumnDef="NetworkName">
+                                        <mat-header-cell *cdkHeaderCellDef mat-sort-header class="flex">
+                                            <div><b>Network Name: </b>&nbsp;</div>
+                                            <div style="height: 42px!important;">
+                                                <mat-form-field>
+                                                    <input matInput #networkFilter (keyup)="networks?.filter($event)"
+                                                        (click)="$event.preventDefault();$event.stopPropagation();"
+                                                        placeholder="Filter networks">
+                                                    <button mat-button matSuffix mat-icon-button aria-label="Clear"
+                                                        (click)="networkFilter.value=''; networks?.filter($event);">
+                                                        <mat-icon color="warn" *ngIf="networkFilter.value !== ''">close
+                                                        </mat-icon>
+                                                        <mat-icon *ngIf="networkFilter.value === ''">search</mat-icon>
+                                                    </button>
+                                                </mat-form-field>
+                                            </div>
+                                        </mat-header-cell>
+                                        <mat-cell [class.selected]="networks.isSelected(row)" *cdkCellDef="let row">
+                                            {{row.NetworkName}}</mat-cell>
+                                    </ng-container>
+                                    <mat-header-row *cdkHeaderRowDef="networks.columns; sticky: true"></mat-header-row>
+                                    <mat-row *cdkRowDef="let row; columns: networks.columns"
+                                        (click)="networkSelected(row)"></mat-row>
+                                </mat-table>
+                            </div>
+                        </div>
+                        <div class="col-xs-7 margin-5px">
+                            <div class="row"
+                                *ngIf="rateCards.$data | async as rateCardsData; else rateCardsLoadProgress"></div>
+                            <ng-template #rateCardsLoadProgress>
+                                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                            </ng-template>
+                            <div class="row">
+                                <mat-table [dataSource]="rateCards.dataSource" #rateCardsSort="matSort" matSort
+                                    style="height: 300px;overflow: auto;" class="mat-elevation-z8">
+                                    <ng-container cdkColumnDef="Name" sticky>
+                                        <mat-header-cell width-280 *cdkHeaderCellDef mat-sort-header class="flex">
+                                            <div><b>Rate Name: </b>&nbsp;</div>
+                                            <div style="height: 42px!important;">
+                                                <mat-form-field>
+                                                    <input matInput #rateCardsFilter (keyup)="rateCards?.filter($event)"
+                                                        (click)="$event.preventDefault();$event.stopPropagation();"
+                                                        placeholder="Filter rate cards">
+                                                    <button mat-button matSuffix mat-icon-button aria-label="Clear"
+                                                        (click)="rateCardsFilter.value=''; rateCards?.filter($event);">
+                                                        <mat-icon color="warn" *ngIf="rateCardsFilter.value !== ''">
+                                                            close</mat-icon>
+                                                        <mat-icon *ngIf="rateCardsFilter.value === ''">search</mat-icon>
+                                                    </button>
+                                                </mat-form-field>
+                                            </div>
+                                        </mat-header-cell>
+                                        <mat-cell [class.selected]="rateCards.isSelected(row)" width-280
+                                            *cdkCellDef="let row">{{row.Name}}</mat-cell>
+                                    </ng-container>
+                                    <ng-container cdkColumnDef="Network">
+                                        <mat-header-cell width-120 *cdkHeaderCellDef mat-sort-header class="center">
+                                            Network</mat-header-cell>
+                                        <mat-cell [class.selected]="rateCards.isSelected(row)" width-120
+                                            *cdkCellDef="let row">{{row.Network}}</mat-cell>
+                                    </ng-container>
+                                    <ng-container cdkColumnDef="FromYear">
+                                        <mat-header-cell width-80 *cdkHeaderCellDef mat-sort-header class="center">
+                                            <div class="mat-split-header">
+                                                <div class="mat-split-header-line">From</div>
+                                                <div class="mat-split-header-line">Year</div>
+                                            </div>
+                                        </mat-header-cell>
+                                        <mat-cell [class.selected]="rateCards.isSelected(row)" width-80
+                                            *cdkCellDef="let row">{{row.FromYear}}</mat-cell>
+                                    </ng-container>
+                                    <ng-container cdkColumnDef="ToYear">
+                                        <mat-header-cell width-80 *cdkHeaderCellDef mat-sort-header class="center">
+                                            <div class="mat-split-header">
+                                                <div class="mat-split-header-line">To</div>
+                                                <div class="mat-split-header-line">Year</div>
+                                            </div>
+                                        </mat-header-cell>
+                                        <mat-cell [class.selected]="rateCards.isSelected(row)" width-80
+                                            *cdkCellDef="let row">{{row.ToYear}}</mat-cell>
+                                    </ng-container>
+                                    <ng-container cdkColumnDef="FromQuarter">
+                                        <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center">
+                                            <div class="mat-split-header">
+                                                <div class="mat-split-header-line">From</div>
+                                                <div class="mat-split-header-line">Quarter</div>
+                                            </div>
+                                        </mat-header-cell>
+                                        <mat-cell [class.selected]="rateCards.isSelected(row)" width-100
+                                            *cdkCellDef="let row">{{row.FromQuarter}}</mat-cell>
+                                    </ng-container>
+                                    <ng-container cdkColumnDef="ToQuarter">
+                                        <mat-header-cell width-100 *cdkHeaderCellDef mat-sort-header class="center">
+                                            <div class="mat-split-header">
+                                                <div class="mat-split-header-line">To</div>
+                                                <div class="mat-split-header-line">Quarter</div>
+                                            </div>
+                                        </mat-header-cell>
+                                        <mat-cell [class.selected]="rateCards.isSelected(row)" width-100
+                                            *cdkCellDef="let row">{{row.ToQuarter}}</mat-cell>
+                                    </ng-container>
+                                    <mat-header-row *cdkHeaderRowDef="rateCards.columns; sticky: true"></mat-header-row>
+                                    <mat-row *cdkRowDef="let row; columns: rateCards.columns"
+                                        (click)="rateCards.select(row)"></mat-row>
+                                </mat-table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- new deals grid row -->
+                <div class="row">
+                    <div class="col-xs-12" style="margin: 0px; margin-top: 15px; margin-bottom: 15px;">
+                        <app-deals-grid #newDealsGrid (editRow)="editNewDeal($event)"
+                            [maxFullValueSum]="deal?.DealDetails?.FullValue" [height]='300' [storageKey]="'deals'"
+                            [valueTypes]="valueTypes" [rateBasis]="rateBasis" [networks]="networksData"
+                            [rateCards]="rateCardsData" [years]="years"></app-deals-grid>
+                    </div>
+                </div>
+
+                <!-- bottom buttons / toolbar row -->
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="flex-justify-end">
+                            <button mat-button color="primary" (click)="addDeal()" style="height:42px">Add</button>
+                            <button mat-button color="primary" (click)="saveNew()" [disabled]=""
+                                style="height:42px">Save</button>
+                            <button mat-button color="warn" (click)="clearNew()" style="height:42px">Clear All</button>
+                        </div>
+                    </div>
+                </div>
+
+            </mat-tab>
+
+        </mat-tab-group>
+    </div>
+</div>

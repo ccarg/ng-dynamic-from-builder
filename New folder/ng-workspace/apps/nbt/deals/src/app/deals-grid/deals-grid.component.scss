@@ -1,0 +1,18 @@
+.grid-input{
+    height: 30px;
+    width: 99%;
+    border-width: 0px;
+    padding: 3px;
+}
+
+mat-cell > div {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.center {
+    justify-content: center;
+}
+
