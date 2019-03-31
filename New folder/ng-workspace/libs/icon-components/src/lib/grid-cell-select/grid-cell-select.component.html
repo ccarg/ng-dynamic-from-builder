@@ -1,9 +1,0 @@
-<div *ngIf="!row['edit']">{{ row[field] }}</div>
-<mat-form-field *ngIf="row['edit']" class="grid-edit">
-    <mat-select [(ngModel)]="row[fieldId]">        
-        <mat-option (click)="row[field] = ''; row[fieldId] = undefined" [value]="0">None</mat-option>
-        <mat-option *ngFor="let e of listData" [value]="e[listFieldId]" 
-            (click)="row[field] = e[listField]; row[fieldId] = e[listFieldId]"> {{e[listField]}}
-        </mat-option>
-    </mat-select>
-</mat-form-field>

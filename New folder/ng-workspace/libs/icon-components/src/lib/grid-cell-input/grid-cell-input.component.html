@@ -1,4 +1,0 @@
-<div *ngIf="!row['edit']">
-    {{ pipe === 'percent' ? (row[field] | percent) : pipe === 'money' ? (row[field] | money) : pipe === 'number' ? ( row[field] | number: '0.2-2') : row[field] || '&nbsp;' }}
-</div>            
-<input *ngIf="row['edit']" [type]="type" [(ngModel)]="row[field]" class="grid-input right">

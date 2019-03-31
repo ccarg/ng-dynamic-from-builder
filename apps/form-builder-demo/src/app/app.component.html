@@ -1,25 +1,60 @@
-<div style="text-align:center">
-  <h1>Welcome to {{ title }}!</h1>
-  <img
-    width="450"
-    src="https://raw.githubusercontent.com/nrwl/nx/master/nx-logo.png"
-  />
-</div>
+<form [formGroup]="form" (ngSubmit)="save()">
 
-<p>This is an Angular app built with <a href="https://nx.dev">Nx</a>.</p>
-<p>🔎 **Nx is a set of Angular CLI power-ups for modern development.**</p>
+    <mat-form-field>
+      <input matInput placeholder="firstName" formControlName="firstName" type="text" required>
+      <mat-error>field required</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput placeholder="lastName" formControlName="lastName" type="text" required>
+      <mat-error>field required</mat-error>
+    </mat-form-field>
 
-<h2>Quick Start & Documentation</h2>
+    <div formGroupName="address">
+        <h3>Address</h3>
+        <mat-form-field>
+          <input matInput placeholder="street" formControlName="street" type="text" required>
+          <mat-error>field required</mat-error>
+        </mat-form-field>        
+        <mat-form-field>
+          <input matInput placeholder="city" formControlName="city" type="text" required>
+          <mat-error>field required</mat-error>
+        </mat-form-field>        
+        <mat-form-field>
+          <input matInput placeholder="state" formControlName="state" type="text" required>
+          <mat-error>field required</mat-error>
+        </mat-form-field>        
+        <mat-form-field>
+          <input matInput placeholder="zip" formControlName="zip" type="number" required>
+          <mat-error>field required</mat-error>
+        </mat-form-field>        
+    </div>        
 
-<ul>
-  <li>
-    <a href="https://nx.dev/getting-started/what-is-nx"
-      >30-minute video showing all Nx features</a
-    >
-  </li>
-  <li>
-    <a href="https://nx.dev/tutorial/01-create-application"
-      >Interactive tutorial</a
-    >
-  </li>
-</ul>
+    <div formArrayName="aliases">
+        <h3>Aliases</h3> 
+        <button mat-raised-button color="primary" (click)="addAlias()">add alias</button>
+        <div *ngFor="let alias of aliases.controls; let i = index">
+            <div [formGroupName]="i">
+                <p>Alias:</p>
+                <mat-form-field>
+                  <input matInput placeholder="name" formControlName="name" type="text" required>
+                  <mat-error>field required</mat-error>
+                </mat-form-field>  
+                <mat-form-field>
+                  <input matInput placeholder="value" formControlName="value" type="text" required>
+                  <mat-error>field required</mat-error>
+                </mat-form-field>  
+            </div>
+        </div>
+    </div>
+
+    <p>
+        <button mat-raised-button color="primary" (click)="updateProfile()">Update Profile</button>
+    </p>          
+    <button mat-raised-button color="primary" [disabled]="!form.valid" type="submit">Save</button>
+  
+    <p>
+        Value: {{ form.value | json }}
+        Form status: {{form.status}}
+    </p>
+
+</form>
