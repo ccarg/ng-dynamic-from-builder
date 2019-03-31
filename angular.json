@@ -1,0 +1,182 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "",
+  "projects": {
+    "dynamic-form-builder": {
+      "root": "libs/dynamic-form-builder",
+      "sourceRoot": "libs/dynamic-form-builder/src",
+      "projectType": "library",
+      "prefix": "ng-form-builder",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "libs/dynamic-form-builder/tsconfig.lib.json",
+            "project": "libs/dynamic-form-builder/ng-package.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/dynamic-form-builder/tsconfig.lib.json",
+              "libs/dynamic-form-builder/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "libs/dynamic-form-builder/src/test.ts",
+            "tsConfig": "libs/dynamic-form-builder/tsconfig.spec.json",
+            "karmaConfig": "libs/dynamic-form-builder/karma.conf.js"
+          }
+        }
+      },
+      "schematics": {
+        "@nrwl/schematics:component": {
+          "styleext": "sass"
+        }
+      }
+    },
+    "form-builder-demo": {
+      "root": "apps/form-builder-demo/",
+      "sourceRoot": "apps/form-builder-demo/src",
+      "projectType": "application",
+      "prefix": "ng-form-builder",
+      "schematics": {
+        "@nrwl/schematics:component": {
+          "style": "sass"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/apps/form-builder-demo",
+            "index": "apps/form-builder-demo/src/index.html",
+            "main": "apps/form-builder-demo/src/main.ts",
+            "polyfills": "apps/form-builder-demo/src/polyfills.ts",
+            "tsConfig": "apps/form-builder-demo/tsconfig.app.json",
+            "assets": [
+              "apps/form-builder-demo/src/favicon.ico",
+              "apps/form-builder-demo/src/assets"
+            ],
+            "styles": ["apps/form-builder-demo/src/styles.scss"],
+            "scripts": [],
+            "es5BrowserSupport": true
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/form-builder-demo/src/environments/environment.ts",
+                  "with": "apps/form-builder-demo/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "form-builder-demo:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "form-builder-demo:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "form-builder-demo:build"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/form-builder-demo/tsconfig.app.json",
+              "apps/form-builder-demo/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "apps/form-builder-demo/src/test.ts",
+            "tsConfig": "apps/form-builder-demo/tsconfig.spec.json",
+            "karmaConfig": "apps/form-builder-demo/karma.conf.js",
+            "polyfills": "apps/form-builder-demo/src/polyfills.ts",
+            "styles": [],
+            "scripts": [],
+            "assets": []
+          }
+        }
+      }
+    },
+    "form-builder-demo-e2e": {
+      "root": "apps/form-builder-demo-e2e",
+      "projectType": "application",
+      "prefix": "",
+      "architect": {
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "apps/form-builder-demo-e2e/protractor.conf.js",
+            "devServerTarget": "form-builder-demo:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "form-builder-demo:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": "apps/form-builder-demo-e2e/tsconfig.e2e.json",
+            "exclude": ["**/node_modules/**"]
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "warnings": {
+      "typescriptMismatch": false,
+      "versionMismatch": false
+    },
+    "defaultCollection": "@nrwl/schematics"
+  },
+  "schematics": {
+    "@nrwl/schematics:application": {
+      "style": "sass"
+    },
+    "@nrwl/schematics:library": {
+      "style": "sass"
+    }
+  },
+  "defaultProject": "dynamic-form-builder"
+}

@@ -1,0 +1,21 @@
+{
+  "npmScope": "ng-form-builder",
+  "implicitDependencies": {
+    "angular.json": "*",
+    "package.json": "*",
+    "tsconfig.json": "*",
+    "tslint.json": "*",
+    "nx.json": "*"
+  },
+  "projects": {
+    "dynamic-form-builder": {
+      "tags": []
+    },
+    "form-builder-demo": {
+      "tags": []
+    },
+    "form-builder-demo-e2e": {
+      "tags": []
+    }
+  }
+}
