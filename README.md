@@ -1,8 +1,11 @@
-## Angular Dynamic Rective Form Builder Helper  
+## Angular 7 Dynamic Rective Form Builder Helper  
 
-You can use the [editor on GitHub](https://github.com/ccarg/ng-dynamic-from-builder/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Simple way to build data model FormGroup 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+How ro run:
+- clone repository 
+- npm install
+- ng serve --project=form-builder-demo
 
 ### Markdown
 
