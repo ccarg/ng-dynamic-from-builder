@@ -1,15 +1,11 @@
 ## Angular 7 Dynamic Rective Form Builder Helper  
 
-Simple way to build data model FormGroup 
+Simple way to build data model FormGroup  
 
-How ro run:
+### How ro run:
 - clone repository 
 - npm install
 - ng serve --project=form-builder-demo
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
 ```markdown
 
