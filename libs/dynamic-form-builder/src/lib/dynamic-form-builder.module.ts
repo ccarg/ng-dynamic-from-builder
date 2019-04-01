@@ -1,7 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DynamicFormBuilderService } from './dynamic-form-builder-service';
 
 @NgModule({
-  imports: [CommonModule]
+  declarations: [DynamicFormBuilderService],
+  imports: [CommonModule],
+  exports: [DynamicFormBuilderService]
 })
 export class DynamicFormBuilderModule {}

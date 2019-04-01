@@ -34,4 +34,7 @@ export class DynamicFormBuilderService{
             , group
         )      
 
+    get formBuilder () : FormBuilder {
+        return this.fb
+    }
 }

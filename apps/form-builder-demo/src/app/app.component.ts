@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, FormArray, Validators} from '@angular/forms';
+import { DynamicFormBuilderService } from '@ng-form-builder/dynamic-form-builder';
 
 @Component({
   selector: 'ng-form-builder-root',
@@ -7,10 +8,10 @@ import { FormGroup, FormBuilder, FormArray, Validators} from '@angular/forms';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  constructor(private fb: FormBuilder) {}
+  constructor(private dfb: DynamicFormBuilderService) {}
 
   ngOnInit() {
-      this.form = this.ccFormBuilder(this.model)
+      this.form = this.dfb.ccFormBuilder(this.model)
   }
 
   model = {
@@ -30,38 +31,12 @@ export class AppComponent {
 
   form: FormGroup;
 
-  isObject = val => typeof val === 'object' && !Array.isArray(val);
-  isString = val => typeof val === 'string' || val instanceof String;
-  isObjectArray = val => Array.isArray(val) && !this.isString(val)
-
-  ccFormBuilder = (obj = {}, group : any = this.fb.group({})) => Object.entries(obj)
-      .reduce(
-          (result, [key,val]) => {
-              if(this.isObject(val)){
-                  let newGroup = this.ccFormBuilder(val, this.fb.group({}))
-                  this.isObjectArray(result)
-                      ? result.push(newGroup)
-                      : result.controls[key] = newGroup;
-              }
-              else if (Array.isArray(val)){
-                  let newArray = Object.values(this.ccFormBuilder(val, []))
-                  result.controls[key] = this.fb.array(newArray)
-                  
-              }
-              else{                
-                  result.controls[key] = this.fb.control(val)
-              }
-              return result;
-          }
-          , group
-      )      
-
   get aliases(){
       return this.form.get('aliases') as FormArray
   }
 
   addAlias(){
-    this.aliases.push(this.fb.group({name:[''], value:['']}))
+    this.aliases.push(this.dfb.formBuilder.group({name:[''], value:['']}))
   }
 
   save(){
