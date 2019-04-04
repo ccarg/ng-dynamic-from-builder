@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, FormArray, Validators} from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormGroup, FormArray} from '@angular/forms';
 import { DynamicFormBuilderService } from '@ng-form-builder/dynamic-form-builder';
 
 @Component({

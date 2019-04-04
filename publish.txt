@@ -1,1 +1,0 @@
-npm publish --access public --folder "C:\git\ng-dynamic-from-builder\dist\libs\dynamic-form-builder" --dry-run

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormControl } from '@angular/forms';
 
 @Injectable({
     providedIn: 'root'
@@ -23,16 +23,16 @@ export class DynamicFormBuilderService{
                 }
                 else if (Array.isArray(val)){
                     const newArray = Object.values(this.ccFormBuilder(val, []))
-                    result.controls[key] = this.fb.array(newArray)
+                    result.addControl(key, this.fb.array(newArray))
                     
                 }
                 else{                
-                    result.controls[key] = this.fb.control(val)
+                    result.addControl(key, new FormControl(val))
                 }
                 return result;
             }
             , group
-        )      
+        )           
 
     get formBuilder () : FormBuilder {
         return this.fb

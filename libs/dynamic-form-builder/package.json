@@ -1,6 +1,6 @@
 {
-  "name": "@ng-form-builder/dynamic-form-builder",
-  "version": "0.0.1",
+  "name": "ng-dynamic-form-builder",
+  "version": "1.0.6",
   "homepage": "https://github.com/ccarg/ng-dynamic-from-builder",
   "author": "ccarg",
   "license": "MIT",  
