@@ -15,8 +15,9 @@ export class DynamicFormBuilderService{
     ccFormBuilder = (obj = {}, group : any = this.fb.group({})) => Object.entries(obj)
         .reduce(
             (result, [key,val]) => {
+                //debugger;
                 if(this.isObject(val)){
-                    const newGroup = this.ccFormBuilder(val, this.fb.group({}))
+                    const newGroup = this.ccFormBuilder(val || '', this.fb.group({}))
                     this.isObjectArray(result)
                         ? result.push(newGroup)
                         : result.controls[key] = newGroup;
@@ -27,7 +28,7 @@ export class DynamicFormBuilderService{
                     
                 }
                 else{                
-                    result.addControl(key, new FormControl(val))
+                    result.addControl(key, new FormControl(val || ''))
                 }
                 return result;
             }

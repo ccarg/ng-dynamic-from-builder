@@ -15,6 +15,7 @@ export class AppComponent {
   }
 
   model = {
+      title: null,
       firstName: 'John',
       lastName: 'Doe',
       address: {
