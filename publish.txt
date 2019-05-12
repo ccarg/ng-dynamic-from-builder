@@ -1,0 +1,6 @@
+npm publish --access public --folder "C:\repo\ng-dynamic-from-builder\dist\libs\dynamic-form-builder" --dry-run
+
+update package.json version
+ng build --project=dynamic-form-builder
+npm adduser
+npm publish --access public --folder "C:\repo\ng-dynamic-from-builder\dist\libs\dynamic-form-builder"

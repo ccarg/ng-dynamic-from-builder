@@ -1,5 +1,9 @@
 ## Angular 7 Dynamic Rective Form Builder Example  
 
+https://www.npmjs.com/package/ng-dynamic-form-builder
+
+`npm install ng-dynamic-form-builder --save`
+
 Simple way to build data model FormGroup  
 
 ### How ro run:
